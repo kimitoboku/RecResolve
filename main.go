@@ -5,6 +5,8 @@ import (
 	"github.com/miekg/dns"
 	"math/rand"
 	"net"
+	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -14,6 +16,7 @@ func rrsearch(ns string, q string, t uint16) *dns.Msg {
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(q), t)
 	r, _, err := c.Exchange(m, net.JoinHostPort(ns, "53"))
+
 	if err != nil {
 		fmt.Println(err.Error())
 		panic("rrsearch Error")
@@ -26,16 +29,22 @@ func splitRR(rr dns.RR) []string {
 	return rrary
 }
 
-func main() {
+func recRsolve(dst, ns string, n int) string {
+	var tab string
+	for i := 0; i < n; i++ {
+		tab = tab + "\t"
+	}
 	rand.Seed(time.Now().UnixNano())
-	dst := "techack.net"
-	ns := "202.12.27.33"
 	for {
+		checkNS, _ := regexp.MatchString("^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$", ns)
+		if checkNS == false {
+			ns = recRsolve(ns, "202.12.27.33", n+1)
+		}
 		r := rrsearch(ns, dst, dns.TypeA)
 		if len(r.Answer) == 0 {
 			rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
-			fmt.Println(ns + "=>")
-			fmt.Printf("\t%s -> %s\n",
+			fmt.Println(tab + ns + "=>")
+			fmt.Printf(tab+"\t%s -> %s\n",
 				rrs[0],
 				rrs[4],
 			)
@@ -51,16 +60,22 @@ func main() {
 				ns = rrs[4]
 			}
 		} else {
-			fmt.Println("Answer : " + ns + "=>")
+			fmt.Println(tab + "Answer : " + ns + "=>")
+			var ip string
 			for _, ans := range r.Answer {
 				anss := splitRR(ans)
-				fmt.Printf("\t%s -> %s\n",
+				fmt.Printf(tab+"\t%s -> %s\n",
 					dst,
 					anss[4],
 				)
+				ip = anss[4]
 			}
-			return
+			return ip
 		}
 	}
+}
 
+func main() {
+	dst := os.Args
+	recRsolve(dst[1], "202.12.27.33", 0)
 }

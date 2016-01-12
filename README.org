@@ -1,0 +1,29 @@
+* RecResolve
+DNSの再帰検索がどのように行われるかを見るためのツールです．
+適当に勉強用に作ってます
+
+* 実行結果
+#+BEGIN_SRC text
+> go run main.go www.google.co.jp
+202.12.27.33=>
+        jp. -> a.dns.jp.
+203.119.1.1=>
+        google.co.jp. -> ns2.google.com.
+        202.12.27.33=>
+                com. -> l.gtld-servers.net.
+                202.12.27.33=>
+                        net. -> k.gtld-servers.net.
+                192.52.178.30=>
+                        gtld-servers.net. -> g2.gtld-servers.net.
+                Answer : 192.42.93.31=>
+                        l.gtld-servers.net. -> 192.41.162.30
+        192.41.162.30=>
+                google.com. -> ns1.google.com.
+        Answer : 216.239.32.10=>
+                ns2.google.com. -> 216.239.34.10
+Answer : 216.239.34.10=>
+        www.google.co.jp -> 173.194.117.191
+        www.google.co.jp -> 173.194.117.183
+        www.google.co.jp -> 173.194.117.175
+        www.google.co.jp -> 173.194.117.184
+#+END_SRC
