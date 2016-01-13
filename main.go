@@ -29,6 +29,25 @@ func splitRR(rr dns.RR) []string {
 	return rrary
 }
 
+func setNS(rrs []string, r *dns.Msg) (string, string) {
+	var ns string
+	typ := "A"
+
+	if strings.Contains(rrs[4], rrs[0]) {
+		for _, rr := range r.Extra {
+			rrss := splitRR(rr)
+			if strings.Compare(rrss[0], rrs[4]) == 0 {
+				ns = rrss[4]
+				typ = rrss[3]
+			}
+		}
+	} else {
+		ns = rrs[4]
+	}
+
+	return ns, typ
+}
+
 func recRsolve(dst, ns string, n int) string {
 	var tab string
 	for i := 0; i < n; i++ {
@@ -43,22 +62,18 @@ func recRsolve(dst, ns string, n int) string {
 		r := rrsearch(ns, dst, dns.TypeA)
 		if len(r.Answer) == 0 {
 			rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
+			nss, typ := setNS(rrs, r)
+			for strings.Compare(typ, "AAAA") == 0 {
+				rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
+				nss, typ = setNS(rrs, r)
+			}
+			ns = nss
 			fmt.Println(tab + ns + "=>")
 			fmt.Printf(tab+"\t%s -> %s\n",
 				rrs[0],
 				rrs[4],
 			)
-			if strings.Contains(rrs[4], rrs[0]) {
-				for _, rr := range r.Extra {
-					rrss := splitRR(rr)
-					if strings.Compare(rrss[0], rrs[4]) == 0 {
-						ns = rrss[4]
-						break
-					}
-				}
-			} else {
-				ns = rrs[4]
-			}
+
 		} else {
 			fmt.Println(tab + "Answer : " + ns + "=>")
 			var ip string
