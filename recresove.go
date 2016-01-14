@@ -15,6 +15,7 @@ func rrsearch(ns string, q string, t uint16) *dns.Msg {
 	c := new(dns.Client)
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(q), t)
+
 	r, _, err := c.Exchange(m, net.JoinHostPort(ns, "53"))
 
 	if err != nil {
