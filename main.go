@@ -30,11 +30,11 @@ func splitRR(rr dns.RR) []string {
 	return rrary
 }
 
-func setNS(rrs []string, r *dns.Msg) (string, string) {
+func setNS(rrs []string, r *dns.Msg, qns string) (string, string) {
 	var ns string
 	typ := "A"
 
-	if strings.Contains(rrs[4], rrs[0]) {
+	if strings.Contains(rrs[4], rrs[0]) || strings.Compare(qns, "202.12.27.33") == 0 {
 		for _, rr := range r.Extra {
 			rrss := splitRR(rr)
 			if strings.Compare(rrss[0], rrs[4]) == 0 {
@@ -63,10 +63,10 @@ func recRsolve(dst, ns string, n int) string {
 		r := rrsearch(ns, dst, dns.TypeA)
 		if len(r.Answer) == 0 {
 			rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
-			nss, typ := setNS(rrs, r)
+			nss, typ := setNS(rrs, r, ns)
 			for strings.Compare(typ, "AAAA") == 0 {
 				rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
-				nss, typ = setNS(rrs, r)
+				nss, typ = setNS(rrs, r, ns)
 			}
 			ns = nss
 			fmt.Println(tab + ns + "=>")
