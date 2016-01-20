@@ -68,13 +68,12 @@ func recRsolve(dst, ns string, n int) string {
 				rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
 				nss, typ = setNS(rrs, r, ns)
 			}
-			ns = nss
 			fmt.Println(tab + ns + "=>")
 			fmt.Printf(tab+"\t%s -> %s\n",
 				rrs[0],
 				rrs[4],
 			)
-
+			ns = nss
 		} else {
 			fmt.Println(tab + "Answer : " + ns + "=>")
 			var ip string
