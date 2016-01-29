@@ -1,29 +1,55 @@
 * RecResolve
-DNSの再帰検索がどのように行われるかを見るためのツールです．
+DNSの反復検索がどのように行われるかを見るためのツールです．
 適当に勉強用に作ってます
 
 * 実行結果
 #+BEGIN_SRC text
-> go run main.go www.google.co.jp
+$ go build
+$ ./RecResolve
+RecResolve
+NAME:
+   RecResolve - It is a tool to see recursive search of the DNS is how to.
+
+USAGE:
+   RecResolve [global options] command [command options] [arguments...]
+   
+VERSION:
+   0.0.1
+   
+COMMANDS:
+   rec, r       Iterate Search
+   norec, n     No Iterate Search
+   help, h      Shows a list of commands or help for one command
+   
+GLOBAL OPTIONS:
+   --help, -h           show help
+   --version, -v        print the version
+   
+$ ./RecResolve rec www.amazon.co.jp
 202.12.27.33=>
-        jp. -> a.dns.jp.
-203.119.1.1=>
-        google.co.jp. -> ns2.google.com.
+        jp. -> b.dns.jp.
+203.119.40.1=>
+        amazon.co.jp. -> ns2.p31.dynect.net.
         202.12.27.33=>
-                com. -> l.gtld-servers.net.
+                net. -> j.gtld-servers.net.
+        192.48.79.30=>
+                dynect.net. -> ns4.dynamicnetworkservices.net.
                 202.12.27.33=>
-                        net. -> k.gtld-servers.net.
-                192.52.178.30=>
-                        gtld-servers.net. -> g2.gtld-servers.net.
-                Answer : 192.42.93.31=>
-                        l.gtld-servers.net. -> 192.41.162.30
-        192.41.162.30=>
-                google.com. -> ns1.google.com.
-        Answer : 216.239.32.10=>
-                ns2.google.com. -> 216.239.34.10
-Answer : 216.239.34.10=>
-        www.google.co.jp -> 173.194.117.191
-        www.google.co.jp -> 173.194.117.183
-        www.google.co.jp -> 173.194.117.175
-        www.google.co.jp -> 173.194.117.184
+                        net. -> c.gtld-servers.net.
+                192.26.92.30=>
+                        dynamicnetworkservices.net. -> ns4.dynamicnetworkservices.net.
+                Answer : 204.13.251.100=>
+                        ns4.dynamicnetworkservices.net. -> 204.13.251.100
+        Answer : 204.13.251.100=>
+                ns2.p31.dynect.net. -> 204.13.250.31
+204.13.250.31=>
+        www.amazon.co.jp. -> ns-1705.awsdns-21.co.uk.
+        202.12.27.33=>
+                uk. -> dns1.nic.uk.
+        156.154.101.3=>
+                awsdns-21.co.uk. -> g-ns-1496.awsdns-21.co.uk.
+        Answer : 205.251.197.216=>
+                ns-1705.awsdns-21.co.uk. -> 205.251.198.169
+Answer : 205.251.198.169=>
+        www.amazon.co.jp -> 54.240.248.0
 #+END_SRC

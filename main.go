@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/miekg/dns"
 	"math/rand"
 	"net"
 	"os"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/codegangsta/cli"
+	"github.com/miekg/dns"
 )
 
 func rrsearch(ns string, q string, t uint16) *dns.Msg {
@@ -47,6 +49,43 @@ func setNS(rrs []string, r *dns.Msg, qns string) (string, string) {
 	}
 
 	return ns, typ
+}
+
+func noRecRsolve(dst, ns string, n int) string {
+	var tab string
+	for i := 0; i < n; i++ {
+		tab = tab + "\t"
+	}
+	rand.Seed(time.Now().UnixNano())
+	for {
+		r := rrsearch(ns, dst, dns.TypeA)
+		if len(r.Answer) == 0 {
+			rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
+			nss, typ := setNS(rrs, r, ns)
+			for strings.Compare(typ, "AAAA") == 0 {
+				rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
+				nss, typ = setNS(rrs, r, ns)
+			}
+			fmt.Println(tab + ns + "=>")
+			fmt.Printf(tab+"\t%s -> %s\n",
+				rrs[0],
+				rrs[4],
+			)
+			ns = nss
+		} else {
+			fmt.Println(tab + "Answer : " + ns + "=>")
+			var ip string
+			for _, ans := range r.Answer {
+				anss := splitRR(ans)
+				fmt.Printf(tab+"\t%s -> %s\n",
+					dst,
+					anss[4],
+				)
+				ip = anss[4]
+			}
+			return ip
+		}
+	}
 }
 
 func recRsolve(dst, ns string, n int) string {
@@ -91,6 +130,27 @@ func recRsolve(dst, ns string, n int) string {
 }
 
 func main() {
-	dst := os.Args
-	recRsolve(dst[1], "202.12.27.33", 0)
+	app := cli.NewApp()
+	app.Usage = "It is a tool to see recursive search of the DNS is how to."
+	app.Version = "0.0.1"
+
+	app.Commands = []cli.Command{
+		{
+			Name:    "rec",
+			Aliases: []string{"r"},
+			Usage:   "Iterate Search",
+			Action: func(c *cli.Context) {
+				recRsolve(c.Args().First(), "202.12.27.33", 0)
+			},
+		},
+		{
+			Name:    "norec",
+			Aliases: []string{"n"},
+			Usage:   "No Iterate Search",
+			Action: func(c *cli.Context) {
+				noRecRsolve(c.Args().First(), "202.12.27.33", 0)
+			},
+		},
+	}
+	app.Run(os.Args)
 }
