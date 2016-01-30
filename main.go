@@ -75,6 +75,10 @@ func noRecRsolve(dst, ns string) string {
 				rrs[0],
 				rrs[4],
 			)
+			if strings.Compare(rrs[0], ".") == 0 {
+				fmt.Println("Domain Name Not found")
+				os.Exit(1)
+			}
 			ns = nss
 		} else {
 			fmt.Println("Answer : " + ns + "=>")
@@ -116,6 +120,11 @@ func recRsolve(dst, ns string, n int) string {
 				rrs[0],
 				rrs[4],
 			)
+			if strings.Compare(rrs[0], ".") == 0 {
+				fmt.Println("Domain Name Not found")
+				os.Exit(1)
+			}
+
 			ns = nss
 		} else {
 			fmt.Println(tab + "Answer : " + ns + "=>")
