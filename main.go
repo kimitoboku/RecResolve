@@ -211,10 +211,13 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:        "debug",
-			Usage:       "Root DNS Server's IP address",
+			Usage:       "Debug Option for Developer",
 			EnvVar:      "false",
 			Destination: &debug,
 		},
 	}
-	app.Run(os.Args)
+	err := app.Run(os.Args)
+	if err != nil {
+		panic(err)
+	}
 }
