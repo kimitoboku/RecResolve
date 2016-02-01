@@ -174,14 +174,14 @@ func recRsolve(dst, ns string, n int) string {
 
 func main() {
 	app := cli.NewApp()
-	app.Usage = "It is a tool to see recursive search of the DNS is how to."
+	app.Usage = "It is a tool to see Iterative Search of the DNS is how to."
 	app.Version = Version
 
 	app.Commands = []cli.Command{
 		{
 			Name:    "rec",
 			Aliases: []string{"r"},
-			Usage:   "Iterate Search",
+			Usage:   "Iterative Search",
 			Action: func(c *cli.Context) {
 				if debug {
 					log.SetFlags(log.Llongfile)
@@ -192,7 +192,7 @@ func main() {
 		{
 			Name:    "norec",
 			Aliases: []string{"n"},
-			Usage:   "No Iterate Search",
+			Usage:   "No Iterative Search",
 			Action: func(c *cli.Context) {
 				if debug {
 					log.SetFlags(log.Llongfile)
