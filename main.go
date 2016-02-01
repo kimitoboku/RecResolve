@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -18,7 +19,8 @@ const (
 )
 
 var (
-	root string
+	root  string
+	debug bool
 )
 
 func rrsearch(ns string, q string, t uint16) *dns.Msg {
@@ -26,8 +28,13 @@ func rrsearch(ns string, q string, t uint16) *dns.Msg {
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(q), t)
 
+	if debug {
+		log.Printf("NS %v,Question %v\n", ns, q)
+	}
 	r, _, err := c.Exchange(m, net.JoinHostPort(ns, "53"))
-
+	if debug {
+		log.Printf("NS %v,Response %v\n", ns, r.String())
+	}
 	if err != nil {
 		fmt.Println(err.Error())
 		panic("rrsearch Error")
@@ -36,17 +43,27 @@ func rrsearch(ns string, q string, t uint16) *dns.Msg {
 }
 
 func splitRR(rr dns.RR) []string {
+	if debug {
+		log.Printf("RR %v\n", rr.String())
+	}
 	rrary := strings.SplitN(rr.String(), "\t", 5)
 	return rrary
 }
 
 func setNS(rrs []string, r *dns.Msg, qns string) (string, string) {
+	if debug {
+		log.Printf("RRS %v,DNS Message %v Qns %v\n", rrs, r.String(), qns)
+	}
+
 	var ns string
 	typ := "A"
 
 	if strings.Contains(rrs[4], rrs[0]) || strings.Compare(qns, root) == 0 {
 		for _, rr := range r.Extra {
 			rrss := splitRR(rr)
+			if strings.Compare(rrss[3], "AAAA") == 0 {
+				break
+			}
 			if strings.Compare(rrss[0], rrs[4]) == 0 {
 				ns = rrss[4]
 				typ = rrss[3]
@@ -67,6 +84,9 @@ func noRecRsolve(dst, ns string) string {
 			rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
 			nss, typ := setNS(rrs, r, ns)
 			for strings.Compare(typ, "AAAA") == 0 {
+				if debug {
+					log.Printf("Type %v\n", typ)
+				}
 				rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
 				nss, typ = setNS(rrs, r, ns)
 			}
@@ -105,15 +125,25 @@ func recRsolve(dst, ns string, n int) string {
 	for {
 		checkNS, _ := regexp.MatchString("^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$", ns)
 		if checkNS == false {
+			if debug {
+				log.Printf("NS %v,Root %v\n", ns, root)
+			}
 			ns = recRsolve(ns, root, n+1)
+			if debug {
+				log.Printf("NS %v,Root %v\n", ns, root)
+			}
 		}
 		r := rrsearch(ns, dst, dns.TypeA)
 		if len(r.Answer) == 0 {
 			rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
 			nss, typ := setNS(rrs, r, ns)
+
 			for strings.Compare(typ, "AAAA") == 0 {
 				rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
 				nss, typ = setNS(rrs, r, ns)
+				if debug {
+					log.Printf("Type %v\n", typ)
+				}
 			}
 			fmt.Println(tab + ns + "=>")
 			fmt.Printf(tab+"\t%s -> %s\n",
@@ -153,6 +183,9 @@ func main() {
 			Aliases: []string{"r"},
 			Usage:   "Iterate Search",
 			Action: func(c *cli.Context) {
+				if debug {
+					log.SetFlags(log.Llongfile)
+				}
 				recRsolve(c.Args().First(), root, 0)
 			},
 		},
@@ -161,6 +194,9 @@ func main() {
 			Aliases: []string{"n"},
 			Usage:   "No Iterate Search",
 			Action: func(c *cli.Context) {
+				if debug {
+					log.SetFlags(log.Llongfile)
+				}
 				noRecRsolve(c.Args().First(), root)
 			},
 		},
@@ -172,6 +208,12 @@ func main() {
 			Value:       "202.12.27.33",
 			Usage:       "Root DNS Server's IP address",
 			Destination: &root,
+		},
+		cli.BoolFlag{
+			Name:        "debug",
+			Usage:       "Root DNS Server's IP address",
+			EnvVar:      "false",
+			Destination: &debug,
 		},
 	}
 	app.Run(os.Args)
