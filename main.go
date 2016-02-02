@@ -70,9 +70,12 @@ func setNS(rrs []string, r *dns.Msg, qns string) (string, string) {
 				typ = rrss[3]
 				break
 			}
-			ns = rrs[4]
 		}
 	} else {
+		ns = rrs[4]
+	}
+
+	if strings.Compare(ns, "") == 0 {
 		ns = rrs[4]
 	}
 	return ns, typ
