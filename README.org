@@ -6,24 +6,26 @@ DNSの反復検索がどのように行われるかを見るためのツール�
 #+BEGIN_SRC text
 $ go build
 $ ./RecResolve
-RecResolve
-NAME:
-   RecResolve - It is a tool to see recursive search of the DNS is how to.
+RNAME:
+   RecResolve - It is a tool to see Iterative Search of the DNS is how to.
 
 USAGE:
    RecResolve [global options] command [command options] [arguments...]
    
 VERSION:
-   0.0.1
+   0.0.4
    
 COMMANDS:
-   rec, r       Iterate Search
-   norec, n     No Iterate Search
+   rec, r       Iterative Search
+   norec, n     No Iterative Search
    help, h      Shows a list of commands or help for one command
    
 GLOBAL OPTIONS:
-   --help, -h           show help
-   --version, -v        print the version
+   --root "202.12.27.33"        Root DNS Server's IP address
+   --debug                      Debug Option for Developer [$false]
+   --fool                       Believe something like flue record [$false]
+   --help, -h                   show help
+   --version, -v                print the versionecResolve
    
 $ ./RecResolve rec www.amazon.co.jp
 202.12.27.33=>
