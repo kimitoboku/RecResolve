@@ -75,7 +75,6 @@ func setNS(rrs []string, r *dns.Msg, qns string) (string, string) {
 	} else {
 		ns = rrs[4]
 	}
-	fmt.Println(len(ns))
 	return ns, typ
 }
 
