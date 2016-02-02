@@ -21,6 +21,7 @@ const (
 var (
 	root  string
 	debug bool
+	fool  bool
 )
 
 func rrsearch(ns string, q string, t uint16) *dns.Msg {
@@ -58,21 +59,23 @@ func setNS(rrs []string, r *dns.Msg, qns string) (string, string) {
 	var ns string
 	typ := "A"
 
-	if strings.Contains(rrs[4], rrs[0]) || strings.Compare(qns, root) == 0 {
+	if strings.Contains(rrs[4], rrs[0]) || strings.Compare(qns, root) == 0 || fool {
 		for _, rr := range r.Extra {
 			rrss := splitRR(rr)
 			if strings.Compare(rrss[3], "AAAA") == 0 {
-				break
+				continue
 			}
 			if strings.Compare(rrss[0], rrs[4]) == 0 {
 				ns = rrss[4]
 				typ = rrss[3]
+				break
 			}
+			ns = rrs[4]
 		}
 	} else {
 		ns = rrs[4]
 	}
-
+	fmt.Println(len(ns))
 	return ns, typ
 }
 
@@ -151,7 +154,7 @@ func recRsolve(dst, ns string, n int) string {
 				rrs[4],
 			)
 			if strings.Compare(rrs[0], ".") == 0 {
-				fmt.Println("Domain Name Not found")
+				fmt.Printf("Domain Name Not found NameServer %v Question %v\n", ns, dst)
 				os.Exit(1)
 			}
 
@@ -214,6 +217,12 @@ func main() {
 			Usage:       "Debug Option for Developer",
 			EnvVar:      "false",
 			Destination: &debug,
+		},
+		cli.BoolFlag{
+			Name:        "fool",
+			Usage:       "Believe something like flue record",
+			EnvVar:      "false",
+			Destination: &fool,
 		},
 	}
 	err := app.Run(os.Args)
