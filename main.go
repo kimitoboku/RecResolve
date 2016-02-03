@@ -87,14 +87,7 @@ func noRecRsolve(dst, ns string) string {
 		r := rrsearch(ns, dst, dns.TypeA)
 		if len(r.Answer) == 0 {
 			rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
-			nss, typ := setNS(rrs, r, ns)
-			for strings.Compare(typ, "AAAA") == 0 {
-				if debug {
-					log.Printf("Type %v\n", typ)
-				}
-				rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
-				nss, typ = setNS(rrs, r, ns)
-			}
+			nss, _ := setNS(rrs, r, ns)
 			fmt.Println(ns + "=>")
 			fmt.Printf("\t%s -> %s\n",
 				rrs[0],
@@ -141,15 +134,8 @@ func recRsolve(dst, ns string, n int) string {
 		r := rrsearch(ns, dst, dns.TypeA)
 		if len(r.Answer) == 0 {
 			rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
-			nss, typ := setNS(rrs, r, ns)
+			nss, _ := setNS(rrs, r, ns)
 
-			for strings.Compare(typ, "AAAA") == 0 {
-				rrs := splitRR(r.Ns[rand.Intn(len(r.Ns))])
-				nss, typ = setNS(rrs, r, ns)
-				if debug {
-					log.Printf("Type %v\n", typ)
-				}
-			}
 			fmt.Println(tab + ns + "=>")
 			fmt.Printf(tab+"\t%s -> %s\n",
 				rrs[0],
