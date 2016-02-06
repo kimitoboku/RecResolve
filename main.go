@@ -38,7 +38,7 @@ func rrsearch(ns string, q string, t uint16) *dns.Msg {
 	}
 	if err != nil {
 		fmt.Println(err.Error())
-		panic("rrsearch Error")
+		os.Exit(1)
 	}
 	return r
 }
@@ -213,8 +213,7 @@ func main() {
 			Destination: &fool,
 		},
 	}
-	err := app.Run(os.Args)
-	if err != nil {
-		panic(err)
+	if err := app.Run(os.Args); err != nil {
+		fmt.Println(err)
 	}
 }
